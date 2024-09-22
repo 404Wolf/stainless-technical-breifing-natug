@@ -22,6 +22,8 @@
   ]
 ]
 
+#outline(title: [Contents #v(.25in)], depth: 5, indent: .25in)
+
 #pagebreak()
 
 #set page(numbering: "1", number-align: center, columns: 2)
@@ -107,7 +109,7 @@ is to start with a random sequence, and manually refine it.
 It's a long process, and without the right tools it's extremely restrictive and
 unfeasible. So let's see how NATuG can help us out.
 
-= Using The Program
+= User Flow
 
 == Program Overview
 
@@ -127,92 +129,168 @@ for editing DNA parameters; the _Domains Tab_, for placing the double helices;
 the _Sequencing Tab_, for choosing the DNA sequences; and the _Snapshots Tab_,
 for setting the bases for the DNA.
 
-In the _Nucleic Acid Tab_, users can adjust geometrical nucleic-acid settings ,
-such as diameter, helical turns, and angles. Th.e tab includes a Profile
-Manager, allowing users to save and load different nucleic acid profiles for
-quick adjustments. This feature is particularly useful for experimenting with
-different DNA configurations and observing how changes affect the overall
-structure.
+== Typical Usage
 
-Moving to the _Domains Tab_, users can define the shape of the nanotube by
-setting the interior angles between domains. The tab provides comprehensive
-controls for managing symmetry with subgroups. It also lets you choose the
-number of nucleosides per strand.
+To design a nanotube in NATuG, you follow many of the same steps as if you were
+to do it manually.
 
-The _Sequencing Tab_ is dedicated to nucleotide sequence assignment. Here, users
-can perform bulk operations to randomize or clear sequences across all strands
-or only those without assigned bases. This feature streamlines the process of
-assigning sequences, ensuring that the designed nanotube meets specific
-experimental requirements. There is also support for exporting the sequences of
-all the strands, so that you can send them to a company for synthesis.
+1) You set up DNA parameters in the _Nucleic Acid Tab_.
 
-== Modal Side View Interaction
-The _Side View Plot_ is an interactive visualization tool that represents the
-nanotube's double helices in a two-dimensional "unrolled" view.
+2) You place the double helices in the _Domains Tab_. You can play around with
+the angles and watch the _Top View Plot_ automatically update. You can click
+between domains to "dent" them inwards or outwards and automatically adjust the
+angles. Various datapoints are presented to help you ensure that the shape you
+design closes.
 
-For complex designs involving long strands or multiple repetitive actions, there
-is an _Action Repeater_ feature, where all clicks get repeated in some direction
-some number of times.
+3) You enter "conjunct" mode and connect the strands together. NATuG is smart
+and will automatically figure out where the new strands end up leading from and
+going to. It colors everything automatically, and you can configure the style of
+most things by clicking on them to get a style dialog.
 
-This is a "modal" editor view because clicking on artifacts within this view do
-different things based on your "mode."
+4) You can "nick" strands to cut them up, and then "link" them back together.
+You can set the sequences of the linkages as you go.
 
-=== Informer Mode
+5) You assign sequences in the _Sequencing Tab_, or by clicking on strands and
+manually setting sequences. NATuG supports loading in the base pairs of common
+viruses. Finally, you can export the sequences to a spreadsheet for synthesis.
 
-Clicking on any point provides detailed information about that specific
-nucleoside or NEMid, like coordinates, angle, strand index, and base.
+= Technical Overview
 
-=== Juncter Mode
-
-Allows users to create cross-strand junctions by clicking on overlapping NEMids,
-enabling strands to weave across multiple domains and forming a cohesive
-nanotube structure.
-
-=== Nicker Mode
-
-Clicking on NEMids introduce nicks in the strands, effectively splitting a
-strand into two separate strands at the selected point.
-
-=== Linker Mode
-
-Enables the connection of the ends of two strands to form longer strands or
-loops. Users can customize the linkage, including adding nucleosides and setting
-sequences for these regions.
-
-=== Highlighter Mode
-
-Provides the ability to highlight specific nucleosides or NEMids for emphasis,
-useful for presenting.
-
-== Uses
-
-== Features
-
-== Technical Overview
+The program is written in `Python`, with `PyQt6`, and `pyqtplot`. It takes
+advantage of a number of different helpful `python` frameworks, like `numpy` and `pandas` for
+optimizations and implementing certain features.
 
 === Program Design
 
-==== Frameworks
+The hardest part of the design of the program has been state management. The
+program is packaged as a `python` package, with a `launch()` function exported
+from a top level `natug/launcher.py` file. The program follows `oop` principals
+for managing program state and exposing functionality.
 
-==== Layout
+When you launch the program, `natug` creates a `natug.Runner`, which is an
+object that keeps track of many `natug.Manager`s. Each `Manager` has a `.current` state,
+and there are `Manager`s for most parts of the program: the `Domain`s, `Helices`, `NucleicAcidProfile`,
+etc. .
 
-==== Data Structures
+The various biological and theoretical structures are all represented with their
+own data structures. Significant effort has gone into making these as simple and
+modularized as possible. For example, `Domain`s are stored in groups called `Subunit`s,
+which all go into one big `Subunits`, which is a property of `Domains`. This
+lets us do really nice things, like modifying the angles of all subunits at
+once.
 
-=== Notable Algorithms
+All the plotting is handled by `pyqtplot`, which is a very powerful plotting
+framework for `PyQt`. We define our own plotter class inherited from theirs, and
+do a lot of custom plotting functionality, like mapping plotted points to actual
+data structures for what the given points are, which have pointers to things
+like the `Strand` they are in.
 
-=== Top View Computation
+#figure(
+  image("./resources/sequence-editor-manual-input.png", height: 2in), caption: [Custom base pair sequence editor],
+)
 
-=== Side View Computation
+#figure(
+  image("./resources/domain-config-table-counts.png", height: 2in), caption: [Domain triple spinbox container],
+)
 
-=== Conjuncting strands
+`PyQt` is somewhat restrictive in that it ships with a predefined subset of
+widgets, and most of the interface was layed out with `QtDesigner`. However,
+some components are so important that custom Widgets have been designed, like
+the sequence editor that autofills the corresponding bases to prevent mistakes,
+or the domain angle chooser.
+
+===== Conjuncting Strands
+
+One of the most important features of NATuG is being able to "conjoin" strands.
+Given two arbitrary NEMids, we want to be able to cut and then reroute the
+strands. Sometimes this will result in loops, which we need to deal with.
+
+#figure(
+  image("./mermaid/out/conjoin-graph.png", width: 100%), caption: [Case 1A],
+)
+
+#v(0.15in)
+
+#block[
+  #let height = 1.4in
+  #grid(
+    columns: 5, gutter: 15pt, figure(
+      image("./resources/junction-case-1A.png", height: height), caption: [<fig:junction-case-1a> Case 1A],
+    ), figure(
+      image("./resources/junction-case-1B.png", height: height), caption: [<fig:junction-case-1b> Case 1B],
+    ), figure(
+      image("./resources/junction-case-2A.png", height: height), caption: [<fig:junction-case-2a> Case 2A],
+    ), figure(
+      image("./resources/junction-case-2B.png", height: height), caption: [<fig:junction-case-2b> Case 2B],
+    ), figure(
+      image("./resources/junction-case-2C.png", height: height), caption: [<fig:junction-case-2c> Case 2C],
+    ),
+  )
+]
+
+Generally, how to create a junction is intuitive, and NATuG handles breaking
+down the cases as shown in the tree.
+
+To conjoin strands, either one or two new strands get created, and the old
+strands get removed; no NEMids are destroyed.
+
+The first step in the processes is checking whether the NEMids are within the
+same strand or two different strands. Then, we check to see if the strands that they lie within are closed or open. 
+
+If the overlapping NEMids are in the same strand, and the strand that they are
+in is an open strand, then one of the new strands will be an open strand, and
+the other strand will become a closed loop strand. If the NEMids are in the same
+strand, and the strand that they are in is an closed-loop strand, which will be
+split into two smaller closed-loop strands.
+
+On the other hand, if the NEMids are in two different strands, things are more
+complicated.
+
+If the NEMids are in different strands, and one of the NEMids is in a closed
+strand, and the other NEMid is in an open strand, then a closed loop is being
+opened back up.
+
+If the NEMids are in different strands, but both strands are open strands, the
+result will be two open strands that traverse multiple domains.
+
+2B is most common when creating a cross-strand exchange between two vertical
+helices in two different domains (pictured), but can occur with two adjacent
+inter-domain strands that are both open as well.
+
+And, lastly, if the NEMids are in different strands, but both strands are
+closed, then two closed-loop strands are being connected to form one larger
+closed-loop strand.
 
 === Data Exchange
 
-== Current State
+NATuG supports exporting and importing of program states to various degrees of
+granularity.
 
-=== Packaging
+You can export and import the entire program program state as a `.natug` file,
+which is a `zip` archive containing metadata about every unique artifact
+currently specified in the system. It is sometimes redundant, since we could
+recompute the artifacts given the configuration, but allows for very quickly
+loading back in the data.
 
-=== Paper
+You can also export and import certain parts of the program state by themselves,
+to use as templates for various different types of nanotubes. For example, DNA
+parameters in the _Nucleic Acid Tab_ are stored in simple `json` files and
+profiles automatically get loaded in/can be exported. Likewise, the arrangement
+of domains can be imported/exported to `csv`s.
+
+Finally, it is still a significant work in progress, but there are plans to
+support exporting the entire program state to a spreadsheet for portability
+outside of the program. Spreadsheets are popular among professionals in the
+field, and are relatively easy to analyze.
+
+== Next Steps
+
+As this iteration of NATuG is completed, a paper is in the process of being
+drafted on various algorithms and functionalities of the program. In the
+process, we have been increasingly considering our end users: NATuG is very good
+at designing tubular structures, but since it is relatively intuitive and simple
+to use compared to alternatives, and given how configurable it is, it also is
+suitable for non-tubular structures as well.
 
 #bibliography("works.bib")
 

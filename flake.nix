@@ -22,6 +22,7 @@
           typst
           typst-lsp
           pdfgrep
+          mermaid-cli
         ];
       };
     });
