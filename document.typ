@@ -17,14 +17,16 @@
 #align(
   center + horizon,
 )[
-  #move(dy: -0.50in)[
-    #block(text(weight: 700, 1.75em, [#title:\ NATuG 3.0]), below: 0.15in)
+  #move(
+    dy: -0.50in,
+  )[
+    #block(
+      text(weight: 700, 1.75em, [#title (NATuG)\ Technical Brief]), below: 0.15in,
+    )
     #v(.25in)
     #block(text(1.25em, author))
   ]
 ]
-
-#outline(title: [Contents #v(.25in)], depth: 3, indent: .25in)
 
 #pagebreak()
 
@@ -32,12 +34,13 @@
 
 = Introduction
 
-== Program Background
+== Background
 
-Creating nanoscale structures is a tricky task; it hard to achieve precision and
-rigidity for useful structures. Structural DNA Nanotechnology involves the
-strategic placement of Watson-Crick DNA base pairings to use DNA as a building
-block for tiny nanostructures.
+Creating nanoscale structures is a tricky task, as it is very hard to achieve
+adequate precision and rigidity at such small scale. _Structural DNA Nanotechnology_ is
+a field within biochemistry that uses DNA as a building block for tiny
+nanostructures. DNA is a uniquly good candidate because it self assembles, can
+be synthesized, and is of the right scale.
 
 #figure(
   image("./resources/nanotube.png", width: 50%), caption: [Example DNA Nanotube @shermanNanotubeDesign],
@@ -45,71 +48,93 @@ block for tiny nanostructures.
 
 The basis for NATuG is William Sherman and Nadrian Seeman's paper,
 _Design of Minimally Strained Nucleic Acid Nanotubes_, which goes into depth
-about the process of designing specifically tubular DNA nanostructures
-@shermanNanotubeDesign. Their initial paper was theoretical, but provided an
-example spreadsheet tool for the design process.
+about the process of designing tunular DNA nanostructures
+@shermanNanotubeDesign.
+
+A DNA nanotube is a structure made by placing double helices adjacent to each
+other and then weaving them together so that you create one larger tube shape
+(see @fig:example-nanotube-rendering).
+
+Their initial paper focuses on the theory, providing an example tool that
+generates relevant plots within Excel.
 
 #figure(
   image("./resources/natug2.png", width: 90%), caption: [NATuG 2 Desktop Application],
-)
+) <fig:natug-2>
 
-Eventually, another iteration was produced, as a desktop application. It was
-better at graphing the nanotubes, but failed to consistently handle joining
-different double heleces together.
+Another iteration was produced as a desktop application (@fig:natug-2). It was
+better at graphing, but failed to consistently handle "weaving" helical domains
+together.
 
-This technical brief introduces _NATuG 3.0_, a new, final iteration. _NATuG 3.0_ is
-a cross platform desktop application that aims to make the nucleic-acid design
-process simpler than ever. NATuG provides an intuitive interface to streamline
-the design process.
+This brief introduces _NATuG 3.0_, a final iteration.
+
+NATuG 3.0 is a Python desktop application available via `pypi`. You can try it
+out by running `pip install natug` (ideally in a virtual environment).
 
 == Nanotube Design Process
 
-First, you choose DNA parameters, like the diameter of the DNA. Then you choose
-how to place the double helices, to determine the tube shape.
+Designing DNA nanotubes is a complex process; here is a brief overview.
+
+First, you choose the type of DNA you are working with. Then, you find a tube
+shape consistent with the geometry of DNA double helices by strategically
+setting angles between helical domains, aligning helices next to each other in a
+way where you can then place connections between the helices (see
+@fig:top-view-example).
+
+#[
+  #set figure.caption(position: top)
+  #figure(
+    [
+      #set figure.caption(position: bottom)
+      #v(0.025in)
+      #grid(
+        columns: 2, figure(
+          image("./resources/top-view-example-2.png", width: 80%), caption: [Domain \#2 has a small angle (see angle between \#1 \#2 and \#3)], numbering: none,
+        ), figure(
+          image("./resources/top-view-example-1.png", width: 80%), caption: [Domain \#2 has a big angle (see angle between \#1 \#2 and \#3)], numbering: none,
+        ),
+      )
+    ], caption: [Choosing the shape of the nanotube by setting angles between helical domains],
+  ) <fig:top-view-example>
+]
 
 #figure(
-  image("./resources/top-view-example-2.png", width: 50%), caption: [Domain \#2 has a small angle (see angle between \#1 \#2 and \#3)],
-)
+  image("./resources/cross-strand-exchange.png", height: 1.45in), caption: [Creating a cross-strand exchange],
+) <fig:cross-strand-exchange>
 
-#figure(
-  image("./resources/top-view-example-1.png", width: 50%), caption: [Domain \#2 has a big angle (see angle between \#1 \#2 and \#3)],
-)
-
-There's some geometry at play to make sure the tube closes.
+You create those cross-strand exchanges to keep the structure held together (see
+@fig:cross-strand-exchange). Then, you cut up the strands so as to create "staple"
+strands, typically where one long virus strand runs through the entire
+structure, and smaller synthetic strands bind it all together. Finally you
+choose all the base sequences, and send it to a lab for synthesis.
 
 #figure(
   image("./resources/staple-strands.png", width: 100%), caption: [DNA staple strands @unsw2017capsid],
-)
-
-Now, you can weave together strands by creating cross-strand switches, where a
-strand in one double helix changes and actually switches over to another. Then,
-you "linkages," since we use "staple strands" to connect one very long virus
-strand backbone.
-
-Finally, we assign sequences to the DNA. The goal is to choose sequences such
-that the DNA will fold on its own into the correct nanotube shape.
-
-Overall, it's a long process, and without the right tools it's extremely
-restrictive and unfeasible. So let's see how NATuG can help us out.
+) <fig:staple-strands>
 
 = Program Overview
 
 #figure(
-  image("./resources/program-layout.png", width: 100%), caption: [NATuG Program Layout],
-)
+  image("./resources/program-overview.png", width: 100%), caption: [NATuG Program Layout],
+) <fig:progrma-layout>
 
-There are two main regions. First, the _Side View Plot_, a central component
-where users can interact directly with DNA strands. You can think of it sort of
-like a Mercator projection, where we "unroll" the DNA. Second, the _Top View Plot_,
-which displays an overhead of the nanotube.
+NATuG is split into a few panes.
 
-The _Side View Plot_ is modal, which determines what clicks do. There are modes
-like "juncter", which makes it so clicking on the midpoints between bases will
-create strand-exchanges, or "nicker," where you can break apart DNA strands.
+The _Side View Plot_ displays an "unrolled" view of the DNA. This view is modal;
+it determines what clicks do. Modes include things like like "juncter", which
+makes clicking on midpoints between DNA bases create strand-exchanges, or "nicker,"
+where you can break apart DNA strands.
+
+The _Top View Plot_ is a bird's eye view of the nanotube. You can click on
+helical domains in it and it redirects you to the _Side View Plot_.
 
 On the _Config Panel_ on the right side, there are config tabs, like the _Nucleic Acid Tab_,
 for editing DNA parameters; the _Domains Tab_, for placing the double helices;
 the _Sequencing Tab_, for choosing the DNA sequences, and more.
+
+#figure(
+  image("./resources/creating-cross-strand-exchanges.png", height: 2.25in), caption: [You can create cross-strand exchanges in "juncter" mode with just a click],
+) <fig:side-view-plot>
 
 To design a nanotube in NATuG, you follow many of the same steps as if you were
 to do it manually.
@@ -134,24 +159,20 @@ like file exports.
 
 === General Design
 
-The hardest part of the design of the program has been state management. NATuG
-is a `python` package that heavily follows `oop` principals for managing program
-state and exposing functionality.
+NATuG is a `python` package that heavily follows `oop` principals for managing
+program state and exposing functionality.
 
-When you launch the program, `natug` creates a `natug.Runner`, which is an
-object that keeps track of many `natug.Manager`s. Each `Manager` has a `.current` state,
-and there are `Manager`s for most parts of the program: the `Domain`s, `Helices`, `NucleicAcidProfile`,
-etc. .
+The hardest part of the design of the program has been state management. When
+you launch the program, `natug` creates a `natug.Runner`, which keeps track of
+many `natug.Manager`s. Each `Manager` has a `.current` state, and there are `Manager`s
+for most parts of the program: the `Domain`s, `Helices`, etc. .
 
-The various biological structures are represented with spcial data structures.
+The various biological structures are represented with special data structures.
 Significant effort has gone into making these as simple/modularized as possible.
 
 For example, `Domain`s are stored in groups called `Subunit`s, which all go into
 one big `Subunits`, which is a property of `Domains`. This lets us do nice
-things like modifying angles of all subunits at once.
-
-All the plotting is handled by `pyqtplot`, with lots of customization like
-mapping plotted points to corresponding data structures.
+things like modifying angles of all symmetrical subunits at once.
 
 #figure(
   image("./resources/sequence-editor-manual-input.png", height: 2in), caption: [Custom base pair sequence editor],
@@ -161,70 +182,89 @@ mapping plotted points to corresponding data structures.
   image("./resources/domain-config-table-counts.png", height: 2in), caption: [Domain triple spinbox container],
 )
 
-`PyQt` is restrictive; it ships with some predefined widgets and it is annoying
-to compose complex new ones. However, some components are so important that it
-was worth the effort, like the sequence editor that autofills the corresponding
-bases to prevent mistakes. Designing custom UI components like this is tricky,
-both technically, and because there are usage implications to consider.
+`PyQt` is somewhat restrictive; it ships with predefined widgets and it is
+annoying to compose complex new ones. However, some components are so important
+that it was worth the effort, like the sequence editor that autofills the
+corresponding bases to prevent mistakes. Designing custom UI components like
+this is tricky, both technically, and because there are usage implications to
+consider.
 
-===== Computing Plots
+=== Plotting
 
-NATuG is able to compute the positions of all of the `NEMids` and `Nucleosides` by
-first computing their angles as they spin about their respective helices, and
-then converting those angles to corresponding $x$ coordinates, while the $z$ coordinates
-just increase at a steady pace.
+All the plotting is handled by `pyqtplot`, with lots of customization to make
+plots highly interactive.
+
+NATuG is able to compute the positions of all of the `Point`s (e.g. DNA
+nucleosides) by first computing their angles as they spin about their respective
+helices, and then converting those angles to corresponding $x$ coordinates,
+while the $z$ coordinates just increase at a steady pace. This algorithm is
+roughly defined in Sherman and Seeman's paper, but has been improved on and
+optimized for performance.
 
 Computing the _Top View Plot_ is more straight forward, where we begin at the
 first domain, and then draw by placing each domain relative to the first at some
 angle displacement off from the previous one.
 
-===== Conjuncting Strands
+=== Conjuncting
 
 The most interesting algorithm within NATuG is the strand "conjoining" feature.
 
-Given two arbitrary NEMids, we want to be able to cut and then reroute the
-strands. Sometimes this will result in loops, which we need to deal with.
+Given two arbitrary midpoints between nucleosides, we want to be able to cut and
+then reroute the strands. Sometimes this will result in loops, which we need to
+deal with.
 
 In developing NATuG, an algorithm has been contrived and implemented for this
 process.
 
 #figure(
   image("./mermaid/out/conjoin-graph.png", width: 100%), caption: [Case 1A],
-
-)
+) <fig:junction-conjoin-tree>
 
 #v(0.15in)
 
 #block[
   #let height = 1.4in
   #grid(
-    columns: 5, gutter: 15pt, figure(
-      image("./resources/junction-case-1A.png", height: height), caption: [<fig:junction-case-1a> Case 1A],
-    ), figure(
-      image("./resources/junction-case-1B.png", height: height), caption: [<fig:junction-case-1b> Case 1B],
-    ), figure(
-      image("./resources/junction-case-2A.png", height: height), caption: [<fig:junction-case-2a> Case 2A],
-    ), figure(
-      image("./resources/junction-case-2B.png", height: height), caption: [<fig:junction-case-2b> Case 2B],
-    ), figure(
-      image("./resources/junction-case-2C.png", height: height), caption: [<fig:junction-case-2c> Case 2C],
-    ),
+    columns: 5, gutter: 15pt, [
+      #figure(
+        image("./resources/junction-case-1A.png", height: height), caption: [Case 1A],
+      ) <fig:junction-case-1a>
+    ], [
+      #figure(
+        image("./resources/junction-case-1B.png", height: height), caption: [Case 1B],
+      ) <fig:junction-case-1b>
+    ], [
+      #figure(
+        image("./resources/junction-case-2A.png", height: height), caption: [Case 2A],
+      ) <fig:junction-case-2a>
+    ], [
+      #figure(
+        image("./resources/junction-case-2B.png", height: height), caption: [Case 2B],
+      ) <fig:junction-case-2b>
+    ], [#figure(
+        image("./resources/junction-case-2C.png", height: height), caption: [Case 2C],
+      )<fig:junction-case-2c> ],
   )
 ]
 
 Generally, how to create a junction is intuitive, and NATuG handles breaking
-down the cases.
+down the cases based on whether the two points are along the same strand, and
+whether the strand(s) are open; for all the cases, see
+@fig:junction-conjoin-tree.
 
 === Data Exchange
 
 You can export/import state to `.natug` files, which are `zip` archives
-containing metadata about every all artifacts. It is a bit redundant but also
-allows easy debugging and fast loading. For undo/redo functionality, we use
-automatic `.natug` saves.
+containing metadata about every all artifacts, linking objects together with `uuid`s.
+We trade redundancy for fast reloads and data accessibility. It also lets us
+implement undo/redo with frequent `.natug` saves.
 
-Work is in progress to support exporting to spreadsheets for portability outside
-of the program using `openpyxl`. Spreadsheets are popular among professionals in
-the field, and are easy to analyze.
+Pickling for state saving was considered, but `python` pickles ended up being
+too inaccessible and fragile.
+
+Work is in progress to support exporting to spreadsheets using `openpyxl`.
+Spreadsheets are popular among professionals in the field, are easy to analyze,
+and are highly portable.
 
 For the `.natug` save, we give artifacts unique identifiers to link them
 together with. For a spreadsheet, it would be ideal to reference by spreadsheet
