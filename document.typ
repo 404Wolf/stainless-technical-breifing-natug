@@ -190,6 +190,7 @@ process.
 
 #figure(
   image("./mermaid/out/conjoin-graph.png", width: 100%), caption: [Case 1A],
+
 )
 
 #v(0.15in)
