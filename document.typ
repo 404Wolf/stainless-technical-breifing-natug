@@ -66,7 +66,9 @@ Another iteration was produced as a desktop application (@fig:natug-2). It was
 better at graphing, but failed to consistently handle "weaving" helical domains
 together.
 
-This brief introduces _NATuG 3.0_, a final iteration.
+This brief introduces _NATuG 3.0_, a final iteration. I, Wolf Mermelstein, was
+responsible for all of the software, and I worked with Dr. William Sherman to
+implement his DNA nanotube design methodologies.
 
 NATuG 3.0 is a Python desktop application available via `pypi`. You can try it
 out by running `pip install natug` (ideally in a virtual environment).
@@ -75,11 +77,10 @@ out by running `pip install natug` (ideally in a virtual environment).
 
 Designing DNA nanotubes is a complex process; here is a brief overview.
 
-First, you choose the type of DNA you are working with. Then, you find a tube
-shape consistent with the geometry of DNA double helices by strategically
-setting angles between helical domains, aligning helices next to each other in a
-way where you can then place connections between the helices (see
-@fig:top-view-example).
+First, you choose a type of DNA. Then, you find a tube shape consistent with its
+geometry by strategically setting angles between helical domains, aligning
+helices next to each other in a way where you can then place connections between
+the helices (see @fig:top-view-example).
 
 #[
   #set figure.caption(position: top)
@@ -103,10 +104,10 @@ way where you can then place connections between the helices (see
 ) <fig:cross-strand-exchange>
 
 You create those cross-strand exchanges to keep the structure held together (see
-@fig:cross-strand-exchange). Then, you cut up the strands so as to create "staple"
+@fig:cross-strand-exchange). Then, you cut up the strands to create "staple"
 strands, typically where one long virus strand runs through the entire
-structure, and smaller synthetic strands bind it all together. Finally you
-choose all the base sequences, and send it to a lab for synthesis.
+structure, and smaller synthetic strands hold it together. Finally you choose
+the base sequences, and send to a lab for synthesis.
 
 #figure(
   image("./resources/staple-strands.png", width: 100%), caption: [DNA staple strands @unsw2017capsid],
@@ -121,35 +122,32 @@ choose all the base sequences, and send it to a lab for synthesis.
 NATuG is split into a few panes.
 
 The _Side View Plot_ displays an "unrolled" view of the DNA. This view is modal;
-it determines what clicks do. Modes include things like like "juncter", which
-makes clicking on midpoints between DNA bases create strand-exchanges, or "nicker,"
-where you can break apart DNA strands.
-
-The _Top View Plot_ is a bird's eye view of the nanotube. You can click on
-helical domains in it and it redirects you to the _Side View Plot_.
+modes determines what clicks do. They include "juncter", where clicking on
+midpoints between DNA bases creates strand-exchanges, or "nicker," to break
+apart DNA strands. The _Top View Plot_ is a bird's eye view. You can click on a
+helical domain and it redirects you to it in the _Side View Plot_.
 
 On the _Config Panel_ on the right side, there are config tabs, like the _Nucleic Acid Tab_,
-for editing DNA parameters; the _Domains Tab_, for placing the double helices;
-the _Sequencing Tab_, for choosing the DNA sequences, and more.
+for editing DNA parameters; the _Domains Tab_, for placing double helices; the _Sequencing Tab_,
+for setting DNA sequences.
 
 #figure(
   image("./resources/creating-cross-strand-exchanges.png", height: 2.25in), caption: [You can create cross-strand exchanges in "juncter" mode with just a click],
-) <fig:side-view-plot>
+) <fig:creating-cross-strand-exchanges>
 
 To design a nanotube in NATuG, you follow many of the same steps as if you were
 to do it manually.
 
 You choose DNA parameters in the _Nucleic Acid Tab_, and then set angles between
 double helices in the _Domains Tab_. The plots of the nanotube update live. You
-can also click on double helices in the plot to modify the angles in certain
-ways.
+can click in the _Top View Plot_ to modify angles in certain ways too.
 
-You can then enter "conjunct" mode to "weave" strands together. You can chop-up
-strands, and create linkages. You assign sequences in the _Sequencing Tab_, or
-by clicking on strands and manually setting sequences.
+You can then click on nucleoside midpoints to create cross-strand exchanges (see
+@fig:creating-cross-strand-exchanges). You can chop-up strands, and create
+linkages. You assign sequences in the _Sequencing Tab_, or by clicking on
+strands.
 
-Finally, you can export the program state, and the sequences that you need to
-synthesis.
+Finally, you can export the sequences you need to synthesis.
 
 = Technical Overview
 
@@ -162,17 +160,17 @@ like file exports.
 NATuG is a `python` package that heavily follows `oop` principals for managing
 program state and exposing functionality.
 
-The hardest part of the design of the program has been state management. When
-you launch the program, `natug` creates a `natug.Runner`, which keeps track of
-many `natug.Manager`s. Each `Manager` has a `.current` state, and there are `Manager`s
-for most parts of the program: the `Domain`s, `Helices`, etc. .
+The hardest part of program design has been state management. When launching the
+program, `natug` creates a `natug.Runner` to keep track of `natug.Manager`s.
+Each `Manager` has a `.current` state, and there are `Manager`s for most parts
+of the program: the `Domain`s, `Helices`, etc. . In the future, we will be able
+to have multiple `Runners` to edit multiple nanotubes simultaneously.
 
-The various biological structures are represented with special data structures.
+The various biological structures are represented using special data structures.
 Significant effort has gone into making these as simple/modularized as possible.
-
-For example, `Domain`s are stored in groups called `Subunit`s, which all go into
-one big `Subunits`, which is a property of `Domains`. This lets us do nice
-things like modifying angles of all symmetrical subunits at once.
+For example, `Domain`s are stored in groups called `Subunit`s, which go into one
+big `Subunits`, a property of `Domains`. This lets us do nice things like
+modifying angles of all symmetrical groups of `Domains` at once.
 
 #figure(
   image("./resources/sequence-editor-manual-input.png", height: 2in), caption: [Custom base pair sequence editor],
@@ -183,11 +181,10 @@ things like modifying angles of all symmetrical subunits at once.
 )
 
 `PyQt` is somewhat restrictive; it ships with predefined widgets and it is
-annoying to compose complex new ones. However, some components are so important
-that it was worth the effort, like the sequence editor that autofills the
-corresponding bases to prevent mistakes. Designing custom UI components like
-this is tricky, both technically, and because there are usage implications to
-consider.
+annoying to compose complex new ones, but some custom ones needed to be made,
+like the sequence editor that autofills the corresponding bases to prevent
+mistakes. Designing custom widgets like this is tricky, technically, and because
+there are usage implications to consider.
 
 === Plotting
 
@@ -195,15 +192,14 @@ All the plotting is handled by `pyqtplot`, with lots of customization to make
 plots highly interactive.
 
 NATuG is able to compute the positions of all of the `Point`s (e.g. DNA
-nucleosides) by first computing their angles as they spin about their respective
-helices, and then converting those angles to corresponding $x$ coordinates,
-while the $z$ coordinates just increase at a steady pace. This algorithm is
-roughly defined in Sherman and Seeman's paper, but has been improved on and
-optimized for performance.
+nucleosides) by first computing their angles as they spin about their helices,
+and then converting those angles to $x$ coordinates, while the $z$ coordinates
+just increase at a steady pace. This algorithm is roughly defined in Sherman and
+Seeman's paper.
 
-Computing the _Top View Plot_ is more straight forward, where we begin at the
-first domain, and then draw by placing each domain relative to the first at some
-angle displacement off from the previous one.
+Computing the _Top View Plot_ is more straight forward. We begin at the first
+domain, and then draw by placing each domain relative to the first at some angle
+displacement off from the previous one.
 
 === Conjuncting
 
@@ -212,9 +208,6 @@ The most interesting algorithm within NATuG is the strand "conjoining" feature.
 Given two arbitrary midpoints between nucleosides, we want to be able to cut and
 then reroute the strands. Sometimes this will result in loops, which we need to
 deal with.
-
-In developing NATuG, an algorithm has been contrived and implemented for this
-process.
 
 #figure(
   image("./mermaid/out/conjoin-graph.png", width: 100%), caption: [Case 1A],
@@ -247,10 +240,9 @@ process.
   )
 ]
 
-Generally, how to create a junction is intuitive, and NATuG handles breaking
-down the cases based on whether the two points are along the same strand, and
-whether the strand(s) are open; for all the cases, see
-@fig:junction-conjoin-tree.
+Generally, how to create a junction is intuitive. NATuG handles breaking down
+the cases based on whether the two points are along the same strand, and whether
+the strand(s) are open; for all the cases, see @fig:junction-conjoin-tree.
 
 === Data Exchange
 
@@ -276,11 +268,11 @@ automatically get loaded in/exported.
 
 == Next Steps
 
-As this iteration is completed, a paper is being drafted on algorithms and
-functionalities of the program. We have been increasingly considering our end
-users: NATuG is very good at designing tubular structures, but since it is
-relatively intuitive and simple to use, it also is suitable for non-tubular
-structures as well.
+As this iteration is completed, a paper is being drafted on program
+algorithms/functionalities. We have been increasingly considering end users:
+NATuG is very good at designing tubular structures, but since it is relatively
+intuitive and straight forward, it also is suitable for non-tubular structures
+as well, and potentially educational purposes.
 
 #bibliography("works.bib")
 
