@@ -4,12 +4,17 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    typst = {
+      url = "github:typst/typst";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
-    self,
     nixpkgs,
+    typst,
     flake-utils,
+    ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = import nixpkgs {inherit system;};
@@ -18,11 +23,12 @@
         shellHook = ''
           alias words="pdfgrep "" document.pdf | wc -w"
         '';
-        packages = with pkgs; [
-          typst
-          typst-lsp
-          pdfgrep
-          mermaid-cli
+        packages = [
+          typst.packages.${system}.default
+          pkgs.typst-lsp
+          pkgs.pdfgrep
+          pkgs.mermaid-cli
+          pkgs.entr
         ];
       };
     });
