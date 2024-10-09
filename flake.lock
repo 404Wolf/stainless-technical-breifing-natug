@@ -73,6 +73,22 @@
         "type": "github"
       }
     },
+    "lovelace": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1719223668,
+        "narHash": "sha256-QPFr/JuJT3/7M0LihsESi1GLHU5FGx0YwnTlNZZjbTY=",
+        "owner": "andreasKroepelin",
+        "repo": "lovelace",
+        "rev": "54c7fe2a28bff22ca7567147225079a00261bba2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "andreasKroepelin",
+        "repo": "lovelace",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1728018373,
@@ -104,6 +120,7 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "lovelace": "lovelace",
         "nixpkgs": "nixpkgs",
         "typst": "typst"
       }

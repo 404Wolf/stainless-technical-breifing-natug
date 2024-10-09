@@ -1,5 +1,3 @@
-#import "./lovelace.typ": pseudocode-list
-
 #let title = "Nucleic Acid Nanotube Grapher"
 #let author = "Wolf Mermelstein"
 #set document(author: author, title: title)
@@ -33,82 +31,58 @@
 
 == Background
 
-=== Structural DNA Nanotechnology
-
-Creating nanoscale structures is tricky task, as it is hard to achieve adequate
-precision and rigidity at such small scale. One unique way to do so is through _Structural DNA Nanotechnology_,
-a field that uses DNA as a building block for such structures. Instead of using
-DNA to encode information, one can program sequences into where the DNA "automatically"
-combines to form predetermined structures.
-
 #figure(
   image("./resources/nanotube.png", width: 50%), caption: [Example DNA Nanotube @shermanNanotubeDesign],
 ) <fig:example-nanotube-rendering>
 
-Here, focus is given to designing tubular nanostructures -- nanotubes. A _DNA nanotube_ is
-a structure made by placing double helices adjacent to each other and then
-weaving them together so that you create one larger tube shape (see
-@fig:example-nanotube-rendering). One way to think of it is as if each DNA
-double helix were a log, and you create a bundle of logs. DNA nanotubes have a
-lot of interesting applications, including studying cellular membranes, drug
-delivery, and potentially optics.
+#v(0.05in)
+
+=== Structural DNA Nanotechnology
+
+Creating nanoscale structures is a tricky task, as it is hard to achieve
+precision and rigidity at such small scale. One unique way is with _Structural DNA Nanotechnology_,
+a field of biochemestry that uses DNA as a nanoscale building block. Instead of
+using DNA for its biological purpose, one can selectively program sequences into
+so that the DNA "automatically" combines to form predetermined custom
+structures.
+
+Here, focus is given to designing tubular nanostructures. A _DNA nanotube_ is a
+structure made by placing double helices adjacent to each other, weaving their
+strands together to create one larger tube shape (see
+@fig:example-nanotube-rendering). DNA nanotubes have a lot of interesting
+applications, including studying cellular membranes with MRIs, drug delivery,
+and potentially optics.
 
 The theory for the design processes that the NATuG program facilitates are laid
 out in William Sherman and Nadrian Seeman's paper, _Design of Minimally Strained Nucleic Acid Nanotubes_ @shermanNanotubeDesign.
-
-#figure(
-  image("./resources/natug2.png", width: 90%), caption: [NATuG 2 Desktop Application],
-) <fig:natug-2>
 
 They introduce an Excel tool to help design DNA Nanotubes by generating special
 projection plots detailed in their paper. Eventually, the spreadsheet was
 reimplemented at Brookhaven National laboratory as a desktop application
 (@fig:natug-2). It was better at graphing, but failed to consistently handle "weaving"
-helical domains together, and was designed in a nonmodular way that was
-restrictive to further development.
+helical domains together (cross-strand exchanges), and was designed in a
+nonmodular way restrictive to further development.
 
-This technical briefing introduces _NATuG 3.0_, a final iteration of the Nucleic
-Acid Nanotube Grapher desktop application (NATuG). I, Wolf Mermelstein, was
-responsible for all of the software, and worked closely with Dr. William Sherman
-to implement his DNA nanotube design methodologies.
+This briefing introduces _NATuG 3.0_, a significantly more feature rich, final
+iteration of the Nucleic Acid Nanotube Grapher desktop application (NATuG). I,
+Wolf Mermelstein, was responsible for all of the software, and worked closely
+with Dr. William Sherman to implement his DNA nanotube design methodologies.
 
 NATuG is a Python application available via `pypi`, and you can try it out by
 running `pip install natug` (ideally in a virtual environment), or with nix by
 running `nix run github:natug3/natug`.
 
+#figure(
+  image("./resources/natug2.png", width: 90%), caption: [NATuG 2 Desktop Application],
+) <fig:natug-2>
+
 == Designing DNA Nanotubes
 
-Designing DNA nanotubes is a complex process, but it is helpful to have an idea
+Designing DNA nanotubes is a complex process, so it is helpful to have an idea
 of the steps to understand what NATuG does.
 
-To design a DNA nanotube, first you choose a type of DNA. This involves finding
-parameters for it, like the diameter.
-
-Then, you find a tube shape consistent with its geometry by strategically
-setting angles between helical domains (see @fig:top-view-example).
-
-#figure(
-  image("./resources/cross-strand-exchange.png", height: 1.45in), caption: [Creating a cross-strand exchange],
-) <fig:cross-strand-exchange>
-
-#figure(
-  image("./resources/holliday.png", height: 1.9in), caption: [A 4 way Holliday junction],
-) <fig:holliday-junction>
-
-Now you create cross-strand exchanges to hold the structure together (see
-@fig:cross-strand-exchange). The key is that we "redirect" the path of DNA, some
-what like is the case in Holliday junctions, a naturally occurring phenomena (see
-@fig:holliday-junction).
-
-#figure(
-  image("./resources/staple-strands.png", width: 100%), caption: [DNA staple strands @unsw2017capsid],
-) <fig:staple-strands>
-
-Then, you cut up the strands to create "staple" strands, typically where one
-long virus strand runs through the entire structure, and smaller synthetic
-strands hold it together (see @fig:staple-strands).
-
-Finally you choose the base sequences, and send to a lab for synthesis.
+To design a DNA nanotube, first you choose a type of DNA. This involves
+determining parameters for it, like the diameter.
 
 #[
   #set figure.caption(position: top)
@@ -127,13 +101,50 @@ Finally you choose the base sequences, and send to a lab for synthesis.
   ) <fig:top-view-example>
 ]
 
+#figure(
+  scope: "parent", placement: auto, grid(
+    gutter: 0.25in, columns: 2, [#figure(
+        image("./resources/cross-strand-exchange.png", height: 1.6in), caption: [Creating a cross-strand exchange],
+      ) <fig:cross-strand-exchange>], [#figure(
+        image("./resources/holliday.png", height: 1.6in), caption: [A 4 way Holliday junction],
+      ) <fig:holliday-junction>],
+  ),
+)
+
+Then, you find a tube shape consistent with its geometry by strategically
+setting angles between helical domains (see @fig:top-view-example).
+
+Now you create cross-strand exchanges to hold the structure together (see
+@fig:cross-strand-exchange). The key is that we "redirect" the path of DNA, some
+what like is the case in Holliday junctions, a naturally occurring phenomena
+(see @fig:holliday-junction).
+
+#figure(
+  scope: "parent", placement: auto, image("./resources/staple-strands.png", height: 2in), caption: [DNA staple strands @unsw2017capsid],
+) <fig:staple-strands>
+
+Then, you cut up the strands to create "staple" strands, typically where one
+long virus strand runs through the entire structure, because synthesising DNA
+with custom bases is expensive and can only be done up to about 100 base pairs a
+strand. The, smaller synthetic strands hold it together (see
+@fig:staple-strands).
+
+Finally you choose the base sequences, and send to a lab for synthesis.
+
 #pagebreak()
 
 = The NATuG Program
 
 #figure(
-  image("./resources/program-overview.png", width: 100%), caption: [NATuG Program Layout],
-) <fig:progrma-layout>
+  scope: "parent", placement: auto, block[#grid(
+      columns: 2, gutter: 0.6in, [#figure(
+          image("./resources/program-overview.png", height: 2in), caption: [NATuG Program Layout],
+        ) <fig:progrma-layout>], [#figure(
+          image("./resources/creating-cross-strand-exchanges.png", height: 2in), caption: [You can create cross-strand exchanges in "juncter" mode with just a click],
+        ) <fig:creating-cross-strand-exchanges>],
+    )
+    #v(0.15in)],
+)
 
 NATuG is a custom made desktop application designed to streamline this process.
 The UX is designed for working on one step of the process at a time, and the
@@ -148,10 +159,6 @@ on a helical domain and it redirects you to it in the _Side View Plot_.
 On the _Config Panel_ on the right side, there are config tabs, like the _Nucleic Acid Tab_,
 for editing DNA parameters; the _Domains Tab_, for placing double helices; the _Sequencing Tab_,
 for setting DNA sequences.
-
-#figure(
-  image("./resources/creating-cross-strand-exchanges.png", height: 2.25in), caption: [You can create cross-strand exchanges in "juncter" mode with just a click],
-) <fig:creating-cross-strand-exchanges>
 
 To design a nanotube in NATuG, you follow many of the same steps as if you were
 to do it manually.
