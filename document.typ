@@ -218,7 +218,7 @@ all symmetrical groups at once.
 
 `PyQt` is somewhat restrictive; it ships with predefined widgets and it is
 annoying, but sometimes necessary, to compose complex new ones, like the
-sequence editor that auto-fills the corresponding bases to prevent mistakes (see
+sequence editor that auto-fills the complementary bases to prevent mistakes (see
 @fig:bp-editor). Designing custom widgets like this is tricky, both technically,
 and because there are usage implications to consider.
 
@@ -231,7 +231,7 @@ for great support with PyQt, because of its real time capabilities and deep
 interactivity.
 
 NATuG is able to compute the positions of all of the `Point`s (e.g. DNA
-nucleosides) by first computing their angles as they spin about their helices,
+nucleosides) by first computing their angles as they wind about their helices,
 and then converting those angles to $x$ coordinates, while the $z$ coordinates
 grow steadily.
 
@@ -318,5 +318,12 @@ NATuG is very good at designing tubular structures, but since it is relatively
 intuitive and straight forward, it also is suitable for non-tubular structures
 as well, and potentially educational purposes.
 
-#bibliography("works.bib", full: true)
+#bibliography("works.bib")
 
+#pagebreak()
+#set page(columns: 1)
+#set page(header: [], footer: [])
+
+On the next page I have included an academic poster created at the time of
+working on NATuG 3.0, not part of the "technical briefing," in case a more
+visual overview of the program is helpful.
